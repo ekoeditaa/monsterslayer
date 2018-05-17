@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Monster Slayer</title>
+    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="css/foundation.min.css">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+
+<body>
+    <div id="app">
+        <section class="row">
+            <div class="small-6 columns">
+                <h1 class="text-center">YOU</h1>
+                <div class="healthbar">
+                    <div class="healthbar text-center" :style="{width: myHealthWidth}" style="background-color: green; margin: 0; color: white">
+                        {{ myHealth }}
+                    </div>
+                </div>
+            </div>
+            <div class="small-6 columns">
+                <h1 class="text-center">MONSTER</h1>
+                <div class="healthbar">
+                    <div class="healthbar text-center" :style="{width: monsterHealthWidth}" style="background-color: green; margin: 0; color: white;">
+                        {{ monsterHealth }}
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="row controls">
+            <div class="small-12 columns">
+                <button id="start-game" @click="reset">START NEW GAME</button>
+            </div>
+        </section>
+        <section class="row controls">
+            <div v-if="inGame" class="small-12 columns">
+                <button id="attack" @click="attack">ATTACK</button>
+                <button id="special-attack" @click="specialAttack">SPECIAL ATTACK</button>
+                <button id="heal" @click="heal">HEAL</button>
+                <button id="give-up" @click="giveUp">GIVE UP</button>
+            </div>
+        </section>
+        <section class="row log">
+            <div class="small-12 columns">
+                <ul v-for="value in log">
+                    <li :class="value[0]">
+                        {{ value[1] }}
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
+
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            myHealth: 100,
+            monsterHealth: 100,
+            log: [],
+            inGame: true,
+        },
+        methods: {
+            reset: function () {
+                this.myHealth = 100;
+                this.monsterHealth = 100;
+                this.log = [];
+                this.inGame = true;
+            },
+            monsterMove: function () {
+                if (this.inGame) {
+                    var value = Math.floor(Math.random() * 10) + 5;
+                    this.myHealth -= value;
+                    this.log.push(['monster-turn log', 'Monster attacked you for ' + value]);
+                    if (this.myHealth <= 0) {
+                        if (confirm('You lost! Want to start a new game?'))
+                            this.reset();
+                        else
+                            this.inGame = false;
+                        return;
+                    }
+                }
+            },
+            attack: function () {
+                var value = Math.floor(Math.random() * 5) + 5;
+                this.monsterHealth -= value;
+                this.log.push(['player-turn log', 'You attacked the monster for ' + value]);
+                this.nextMove();
+            },
+            specialAttack: function () {
+                var value = Math.floor(Math.random() * 5) + 10;
+                this.monsterHealth -= value;
+                this.log.push(['player-turn log', 'You special attacked the monster for ' + value]);
+                this.nextMove();
+            },
+            heal: function () {
+                var value = Math.floor(Math.random() * 3) + 5;
+                this.myHealth += value;
+                this.log.push(['player-turn log', 'You healed for ' + value]);
+                this.nextMove();
+            },
+            nextMove: function () {
+                if (this.monsterHealth <= 0) {
+                    if (confirm('You won! Want to start a new game?'))
+                        this.reset();
+                    else
+                        this.inGame = false;
+                    return;
+                } else {
+                    this.monsterMove();
+                }
+            },
+            giveUp: function () {
+                if (confirm('You gave up!! Want to start a new game?'))
+                    this.reset();
+                else
+                    this.inGame = false;
+                return;
+            }
+        },
+        computed: {
+            myHealthWidth: function () {
+                return this.myHealth + '%'
+            },
+            monsterHealthWidth: function () {
+                return this.monsterHealth + '%'
+            },
+        }
+    })
+</script>
